@@ -1,15 +1,14 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
+import { Roboto } from "next/font/google";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+import { ThemeProvider } from "@/theme";
+import { DashboardLayout } from "@/layouts/dashboard";
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+
+const roboto = Roboto({
   subsets: ["latin"],
+  variable: "--font-roboto",
+  display: "swap", // best practice untuk menghindari FOIT
 });
 
 export const metadata: Metadata = {
@@ -22,10 +21,16 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
+
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        {children}
+      <body className={`${roboto.variable}`}>
+        <ThemeProvider>
+          <DashboardLayout>
+            {children}
+          </DashboardLayout>
+        </ThemeProvider>
       </body>
     </html>
   );
