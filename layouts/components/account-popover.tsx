@@ -13,6 +13,7 @@ import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import MenuItem, { menuItemClasses } from '@mui/material/MenuItem';
 import { usePathname, useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 
 
 
@@ -29,6 +30,8 @@ export type AccountPopoverProps = IconButtonProps & {
 
 export function AccountPopover({ data = [], sx, ...other }: AccountPopoverProps) {
   const router = useRouter();
+
+  const {data:session,status} = useSession()
 
   const pathname = usePathname();
 
@@ -50,6 +53,8 @@ export function AccountPopover({ data = [], sx, ...other }: AccountPopoverProps)
     [handleClosePopover, router]
   );
 
+  if(!session?.user) return
+
   return (
     <>
       <IconButton
@@ -65,7 +70,7 @@ export function AccountPopover({ data = [], sx, ...other }: AccountPopoverProps)
         {...other}
       >
         <Avatar alt={"ADMIN"} sx={{ width: 1, height: 1 }}>
-          {"ADMIN".charAt(0).toUpperCase()}
+          {String(session.user.name).charAt(0).toUpperCase()}
         </Avatar>
       </IconButton>
 
@@ -83,11 +88,11 @@ export function AccountPopover({ data = [], sx, ...other }: AccountPopoverProps)
       >
         <Box sx={{ p: 2, pb: 1.5 }}>
           <Typography variant="subtitle2" noWrap>
-            ADMIN
+             {String(session.user.name)}
           </Typography>
 
           <Typography variant="body2" sx={{ color: 'text.secondary' }} noWrap>
-            admin@gmail.com
+            {String(session.user.email)}
           </Typography>
         </Box>
 

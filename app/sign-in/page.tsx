@@ -1,17 +1,49 @@
 "use client"
+import { trpc } from "@/_trpc/client";
+import LoadingSpinner from "@/components/common/LoadingPage";
 import { Iconify } from "@/components/iconify";
-import { Box, Button, Divider, IconButton, InputAdornment, Link, TextField, Typography } from "@mui/material";
+import { Alert, Box, Button, Divider, IconButton, InputAdornment, Link, TextField, Typography } from "@mui/material";
+import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 export default function SignInView() {
   const router = useRouter();
 
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("")
+  const [isLoading, setIsLoading] = useState<boolean>(false)
+
+  const [errorMessage, setErrorMessage] = useState<string>("");
+
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleSignIn = useCallback(() => {
-    router.push('/');
-  }, [router]);
+
+  const { status } = useSession()
+
+  useEffect(() => {
+    if (status == "authenticated") {
+      router.replace("/")
+    }
+  }, [status, router])
+
+  const utils = trpc.useUtils();
+
+  const handleSignIn = useCallback(async () => {
+    setIsLoading(true)
+    const res = await signIn('credentials', {
+      redirect: false,
+      email,
+      password,
+    });
+    if (res?.error) {
+      setErrorMessage('Invalid credential');
+    } else {
+    router.replace("/")
+      utils.invalidate();
+    }
+    setIsLoading(false)
+  }, [router, email, password]);
 
   const renderForm = (
     <Box
@@ -23,9 +55,12 @@ export default function SignInView() {
     >
       <TextField
         fullWidth
+        required
         name="email"
         label="Email address"
-        defaultValue="hello@gmail.com"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        disabled={isLoading}
         sx={{ mb: 3 }}
         slotProps={{
           inputLabel: { shrink: true },
@@ -37,10 +72,13 @@ export default function SignInView() {
       </Link>
 
       <TextField
+        required
         fullWidth
         name="password"
         label="Password"
-        defaultValue="@demo1234"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        disabled={isLoading}
         type={showPassword ? 'text' : 'password'}
         slotProps={{
           inputLabel: { shrink: true },
@@ -58,17 +96,22 @@ export default function SignInView() {
       />
 
       <Button
+        disabled={isLoading}
         fullWidth
         size="large"
-        type="submit"
+        type="button"
         color="inherit"
         variant="contained"
         onClick={handleSignIn}
       >
-        Sign in
+        {isLoading ? 'Signing in...' : 'Sign in'}
+
       </Button>
     </Box>
   );
+
+
+  if (status == "loading") return <LoadingSpinner />
 
   return (
     <>
@@ -94,6 +137,10 @@ export default function SignInView() {
           </Link>
         </Typography>
       </Box>
+      {errorMessage && (
+        <Alert sx={{ mb: 4 }} severity="error">{errorMessage || "Invalid Credential"}</Alert>
+      )}
+
       {renderForm}
       <Divider sx={{ my: 3, '&::before, &::after': { borderTopStyle: 'dashed' } }}>
         <Typography

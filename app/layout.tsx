@@ -3,6 +3,9 @@ import { Roboto } from "next/font/google";
 
 import { ThemeProvider } from "@/theme";
 import { DashboardLayout } from "@/layouts/dashboard";
+import { AuthProvider } from "@/providers/AuthProvider";
+import TRPCProvider from "@/_trpc/Provider";
+import ClientLayout from "./client";
 
 
 const roboto = Roboto({
@@ -27,9 +30,13 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${roboto.variable}`}>
         <ThemeProvider>
-          <DashboardLayout>
-            {children}
-          </DashboardLayout>
+          <AuthProvider>
+            <TRPCProvider>
+              <ClientLayout>
+                {children}
+              </ClientLayout>
+            </TRPCProvider>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>
